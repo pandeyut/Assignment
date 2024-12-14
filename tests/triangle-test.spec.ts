@@ -10,48 +10,46 @@ interface TriangleTest {
   status: number;
 }
 
-const validTriangleTestSet: TriangleTest[] = [
-  { arguments: [10, 10, 10], result: 'equilateral', status: 200 },
-  { arguments: [10, '10', 10], result: 'equilateral', status: 200 },
-    // result type returns a different status code :201 which should not
-  { arguments: [10, 10, 15], result: 'isosceles', status: 201 }, 
-  { arguments: [10, 12, 15], result: 'versatile', status: 200 }
-];
-
-const invalidTriangleTestSet: TriangleTest[] = [
-  { arguments: [10, 2, 1], error: 'Sum of any 2 sides should be greater than the 3rd', status: 418 },
-  { arguments: [10, '@', 1], error: 'All triangle sides should be numeric', status: 422 },
-  { arguments: [10, 10], error: 'Triangle should have 3 side', status: 422 },
-  { arguments: [10, 'something', 10], error: 'All triangle sides should be numeric', status: 422 },
-  { arguments: [0, 0, 0], error: 'All triangle sides should be greater than 0', status: 422 },
-  { arguments: [10, 10, 10, 5], error: 'Invalid input', status: 422 }, // More than 3 sides
-  { arguments: [], error: 'Triangle should have 3 side', status: 422 } // Empty request
-];
-
-test.describe('Valid Triangle Input Tests', () => {
-  validTriangleTestSet.forEach((testData, index) => {
-    test(`[${index}] should return ${testData.result} with status ${testData.status}`, async ({ page }) => {
-      const trianglePage = new TriangleCalculatorPage(page);
-
-      const response = await trianglePage.checkTriangleType(testData.arguments);
-      expect(response.status()).toBe(testData.status);
-
-      const result = (await response.json()).result;
-      expect(result).toBe(`This is ${testData.result} triangle`);
+const triangleTestSet: Array<TriangleTest & { isValid: boolean }> = [
+    // Valid cases
+    { arguments: [10, 10, 10], result: 'equilateral', status: 200, isValid: true },
+    { arguments: [10, '10', 10], result: 'equilateral', status: 200, isValid: true },
+    { arguments: [10, 10, 15], result: 'isosceles', status: 201, isValid: true },
+    { arguments: [10, 12, 15], result: 'versatile', status: 200, isValid: true },
+  
+    // Invalid cases
+    { arguments: [10, 2, 1], error: 'Sum of any 2 sides should be greater than the 3rd', status: 418, isValid: false },
+    { arguments: [10, '@', 1], error: 'All triangle sides should be numeric', status: 422, isValid: false },
+    { arguments: [10, 10], error: 'Triangle should have 3 side', status: 422, isValid: false },
+    { arguments: [10, 'something', 10], error: 'All triangle sides should be numeric', status: 422, isValid: false },
+    { arguments: [0, 0, 0], error: 'All triangle sides should be greater than 0', status: 422, isValid: false },
+    { arguments: [10, 10, 10, 5], error: 'Invalid input', status: 422, isValid: false },
+    { arguments: [], error: 'Triangle should have 3 side', status: 422, isValid: false },
+  ];
+  
+  test.describe('Triangle Calculator API Tests', () => {
+    triangleTestSet.forEach((testData, index) => {
+      if (testData.isValid) {
+        test(`[${index}] Valid: should return ${testData.result} with status ${testData.status}`, async ({ page }) => {
+          const trianglePage = new TriangleCalculatorPage(page);
+  
+          const response = await trianglePage.checkTriangleType(testData.arguments);
+          expect(response.status()).toBe(testData.status);
+  
+          const result = (await response.json()).result;
+          expect(result).toBe(`This is ${testData.result} triangle`);
+        });
+      } else {
+        test(`[${index}] Invalid: should reject with status ${testData.status} for invalid input`, async ({ page }) => {
+          const trianglePage = new TriangleCalculatorPage(page);
+  
+          const response = await trianglePage.checkTriangleType(testData.arguments);
+          expect(response.status()).toBe(testData.status);
+  
+          const error = (await response.json()).error;
+          expect(error).toBe(testData.error);
+        });
+      }
     });
   });
-});
-
-test.describe('Invalid Triangle Input Tests', () => {
-  invalidTriangleTestSet.forEach((testData, index) => {
-    test(`[${index}] should reject with status ${testData.status} for invalid input`, async ({ page }) => {
-      const trianglePage = new TriangleCalculatorPage(page);
-
-      const response = await trianglePage.checkTriangleType(testData.arguments);
-      expect(response.status()).toBe(testData.status);
-
-      const error = (await response.json()).error;
-      expect(error).toBe(testData.error);
-    });
-  });
-});
+  
