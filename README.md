@@ -55,7 +55,6 @@ Test Data
 | VC01         | GET    | None  | Version string        | 200         |
 | VC02         | POST   | None  | I'm a Teapot          | 418         |
 | VC03         | PUT    | None  | I'm a Teapot          | 418         |
-| VC04         | HEAD   | None  | Headers only          | 200         |
 
 
 Notes :

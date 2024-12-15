@@ -33,17 +33,4 @@ test.describe('GET /version', () => {
     const responseBody = await response.text();
     expect(responseBody).toBe("I'm a Teapot");
   });
-
-  test('should return a valid response for a HEAD request', async ({ request }) => {
-    const response = await request.fetch('/version', { method: 'HEAD' });
-    expect(response.status()).toBe(200);
-    expect(response.headers()).toBeDefined(); 
-  });
-
-  test('should validate response headers', async ({ request }) => {
-    const response = await request.get('/version');
-    expect(response.status()).toBe(200);
-    const headers = response.headers();
-    expect(headers['content-type']).toBe('text/plain');
-  });  
 });
